@@ -23,6 +23,9 @@ eastFactions =
 	"BIS_TK_INS"
 ];
 
+DAP_BF_EAST_DEFENSESQUAD=["TK_Soldier_SL_EP1","TK_Soldier_HAT_EP1","TK_Soldier_MG_EP1","TK_Soldier_AT_EP1","TK_Soldier_AA_EP1","TK_Soldier_EP1","TK_Soldier_EP1"];
+DAP_BF_WEST_DEFENSESQUAD=["US_Soldier_SL_EP1","US_Soldier_HAT_EP1","US_Soldier_AR_EP1","US_Soldier_LAT_EP1","US_Soldier_AA_EP1","US_Soldier_EP1","US_Soldier_EP1"]; 
+RUG_DSAI_SIDES = ["RUG_DSAIArab","RUG_DSAI","RUG_DSAIArab","RUG_DSAIArab","RUG_DSAIArab"];
 
 
 if (isMultiplayer) then 
@@ -165,6 +168,87 @@ if (!(isDedicated)) then
 sleep 2;
 
 5 CutText ["","BLACK IN",5];
+
+respawnDelay = 2;
+
+westinfC = 
+{
+	private ["_eastInf","_grp","_unit","_unitL","_count","_type","_null"];
+	_westInf = 70;
+	while {_westInf > 0} do 
+		{
+			_grp = grpNull;
+			_unit = objNull;
+			_unitL = objNull;
+			_count = count DAP_BF_WEST_DEFENSESQUAD;
+
+			//Create team leader first
+			_grp = createGroup (WEST);
+			_pos = getMarkerPos "respawn_west";
+			_type = DAP_BF_WEST_DEFENSESQUAD select 0;
+			_unitL = _grp createUnit [_type, _pos, [], 10, "FORM"];
+			Sleep 0.2;
+			_unitL setSkill 1;
+			_unitL allowFleeing 0;
+			_westInf = _westInf-1; 
+			Sleep 0.1;
+
+			_i = 0; 
+			for [{ _i = 0}, {_i < 7}, {_i = _i + 1}] do 
+			{
+				_type = DAP_BF_WEST_DEFENSESQUAD select round(random _count)-1;
+				_unit = _grp createUnit [_type, _pos, [], 20, "FORM"];
+				Sleep respawnDelay;
+				_unit setSkill 1;
+				_unit allowFleeing 0;
+				_westInf = _westInf-1; 
+				Sleep 0.1;
+			}; 
+			WESTCOM hcsetgroup [_grp,""];
+			_null= [_unitL,1] execVM "Scripts\SquadInit.sqf";
+		};
+};
+
+eastInfC = 
+	{
+	private ["_eastInf","_grp","_unit","_unitL","_count","_type","_null"];
+	_eastInf = 70;
+	while {_eastInf > 0} do 
+		{
+			_grp = grpNull;
+			_unit = objNull;
+			_unitL = objNull;
+			_count = count DAP_BF_EAST_DEFENSESQUAD;
+
+			//Create team leader first
+			_grp = createGroup (EAST);
+			_pos = getMarkerPos "respawn_east";
+			_type = DAP_BF_EAST_DEFENSESQUAD select 0;
+			_unitL = _grp createUnit [_type, _pos, [], 10, "FORM"];
+			Sleep 0.2;
+			_unitL setSkill 1;
+			_unitL allowFleeing 0;
+			_eastInf = _eastInf-1; 
+			Sleep 0.1;
+
+			_i = 0; 
+			for [{ _i = 0}, {_i < 7}, {_i = _i + 1}] do 
+			{
+				_type = DAP_BF_EAST_DEFENSESQUAD select round(random _count)-1;
+				_unit = _grp createUnit [_type, _pos, [], 20, "FORM"];
+				Sleep respawnDelay;
+				_unit setSkill 1;
+				_unit allowFleeing 0;
+				_eastInf = _eastInf-1; 
+				Sleep 0.1;
+			}; 
+			EASTCOM hcsetgroup [_grp,""];
+			_null= [_unitL,0] execVM "Scripts\SquadInit.sqf";
+		};
+};
+
+_nul = [] spawn westinfC;
+_nul = [] spawn eastinfC;
 
 if (isMultiplayer) then 
 {
