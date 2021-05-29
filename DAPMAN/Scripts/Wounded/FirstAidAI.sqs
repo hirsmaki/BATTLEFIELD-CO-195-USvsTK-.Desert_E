@@ -1,0 +1,805 @@
+_unit = _this select 0
+_dragger = _this select 1
+
+? vehicle _dragger != _dragger: exit
+? !(alive _dragger): exit
+
+_side  = (side (group _unit))
+_draggerside  = (side (group _dragger))
+
+? _unit getVariable "DAP_HEAL_STATE"==1: exit
+_unit setVariable ["DAP_HEAL_STATE",1,true]
+
+_unit setVariable ["DAP_WoundState",1,true]
+_unit setVariable ["DAP_Wound_Free",0,true]
+
+_woundtimer=0
+_screamtimer=0
+_rtimer=0
+_nDrag=0
+_dragtime=0
+
+_dragTimeLimit = _unit getVariable "DAP_DRAG_RANGE" 
+? (isNil("_dragTimeLimit")) : _dragTimeLimit=25
+
+_ismedic = getNumber (configFile >> "CfgVehicles" >> typeOf _dragger >> "attendant")
+? isNil("_ismedic"): _ismedic=0
+? _ismedic == 1 : goto "CheckState"
+
+goto "DragHim"
+
+#HelpInit
+
+_unitsquad = (units (group _unit))
+
+{if ((_x getVariable "DAP_Drag"==1) or ((currentCommand _x) == "HEAL")) then {_unitsquad = _unitsquad-[_x];};}ForEach _unitsquad
+{if (_x != vehicle _x) then {_unitsquad = _unitsquad-[_x];};}ForEach _unitsquad
+? _unit getVariable "DAP_FORCEFINDHEALER"==1: goto "SearchAllies"
+? (count _unitsquad)==0: _unit setVariable ["DAP_FORCEFINDHEALER",1,true]
+? (count _unitsquad)>0: goto "CheckState"
+
+#SearchAllies
+_nearestgroup = nearestObjects [_unit,["CAManBase","LandVehicle"],50]
+_n = count _nearestgroup
+_n = -1
+#FindHealer
+?!(alive _unit): goto "Dead"
+_n =_n+1
+? count _nearestgroup == 0: goto "CheckState"
+? _n> count _nearestgroup: goto "CheckState"
+_thatman = _nearestgroup select _n
+
+? isNil("_thatman"): goto "CheckState"
+
+? _unit getVariable "DAP_PFA"==1: goto "CheckState"
+? _unit getVariable "DAP_WoundState"==0: goto "CheckState"
+? ((rating _unit)<-2500): goto "CheckState"
+
+? _thatman isKindOf "LandVehicle": goto "IsVehicle"
+
+{if (((getNumber (configFile >> "CfgVehicles" >> typeOf _x >> "attendant"))==1) and ((currentCommand _x) != "HEAL") and ((_x distance _thatman) <=50) and ((_x getVariable "DAP_Drag")==0)) then {_thatman = _x;};}ForEach units group _thatman
+
+? _thatman == _unit: goto "FindHealer"
+? isPlayer _thatman: goto "FindHealer"
+? isPlayer (leader (group _thatman)): goto "FindHealer"
+? !(alive _thatman): goto "FindHealer"
+? !(canStand _thatman): goto "FindHealer"
+? (getDammage _thatman >0.5): goto "FindHealer"
+? ((currentCommand _thatman) == "HEAL") : goto "FindHealer"
+? (_thatman getVariable "DAP_Drag"==1): goto "FindHealer"
+? (_thatman getVariable "DAP_NOTDRAGGER"==1): goto "FindHealer"
+? (_thatman == leader group _thatman) and (count units group _thatman>1) : goto "FindHealer"
+? (side (group _thatman)) == _side: _dragger = _thatman; _dragger setVariable ["DAP_Drag",1,true]; goto "DragHim"
+goto "FindHealer"
+
+#IsVehicle
+
+? !(alive _thatman) : goto "FindHealer"
+? !(canMove _thatman) : goto "FindHealer"
+? count(crew _thatman) == 0: goto "FindHealer"
+_vehiclecargo = crew _thatman
+{if((_x == driver _thatman) or (_x == gunner _thatman) or (_x == commander _thatman))then{_vehiclecargo=_vehiclecargo-[_x];};}ForEach _vehiclecargo
+? count(_vehiclecargo) == 0 : goto "DriverOut"
+
+_nc=0
+
+#ResetCrewMan
+
+_crewman = _vehiclecargo select _nc
+_nc=_nc+1
+? _nc> count(_vehiclecargo): goto "FindHealer"
+
+{if (((getNumber (configFile >> "CfgVehicles" >> typeOf _x >> "attendant"))==1) and ((currentCommand _x) != "HEAL") and ((_x distance _thatman) <=50) and ((_x getVariable "DAP_Drag")==0)) then {_crewman = _x;};}ForEach _vehiclecargo
+
+?!(alive _crewman) : goto "ResetCrewMan"
+?!(canStand _crewman) : goto "ResetCrewMan"
+? (isPlayer _crewman)  : goto "ResetCrewMan"
+? _crewman == (leader (group _crewman)) : goto "ResetCrewMan"
+? ((currentCommand _crewman) == "HEAL") : goto "ResetCrewMan"
+? (_crewman getVariable "DAP_Drag"==1): goto "ResetCrewMan"
+? (_crewman getVariable "DAP_NOTDRAGGER"==1): goto "ResetCrewMan"
+? (side (group _crewman)) == _side: _vehicle = vehicle _crewman; _vehicle forceSpeed 0; _crewman setVariable ["DAP_Drag",1,true]; [_crewman] allowGetin false
+~ 3
+? ((group _crewman) == (group _unit)): _crewman setVariable ["DAP_ISCREW",1,true]; goto "CheckState"
+? ((side (group _crewman)) == _side) and (alive _crewman) and (canStand _crewman)): _dragger = _crewman; _dragger setVariable ["DAP_Drag",1,true]; goto "DragHim"
+
+goto "ResetCrewMan"
+
+#DriverOut
+_crewman = driver _thatman
+_vehicle = _thatman
+
+? _vehicle isKindOf "StaticWeapon" : _crewman = gunner _vehicle
+
+? behaviour _crewman == "COMBAT": goto "FindHealer"
+? ((currentCommand _crewman) == "HEAL") : goto "FindHealer"
+? (_crewman getVariable "DAP_Drag"==1): goto "FindHealer"
+? (_crewman getVariable "DAP_NOTDRAGGER"==1): goto "FindHealer"
+? (side (group _crewman)) == _side: _crewman setVariable ["DAP_Drag",1,true]; [_crewman] allowGetin false
+~ 3
+? ((group _crewman) == (group _unit)): _crewman setVariable ["DAP_ISCREW",1,true]; goto "CheckState"
+? ((side (group _crewman)) == _side) and (alive _crewman) and (canStand _crewman)): _dragger = _crewman; _dragger setVariable ["DAP_Drag",1,true]; goto "DragHim"
+goto "FindHealer"
+
+#CheckState
+?!(alive _unit): goto "Dead"
+
+?(isPlayer _unit): [nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setVariable ["BIS_BC_dragged",false]; _man setVariable ["BIS_BC_dragger",false];}] call RE
+
+_woundtimer=_woundtimer+1
+_dmg = getdammage _unit
+?_woundtimer>180: goto "Dead"
+? _unit GetVariable "BIS_BC_dragged" : _unit setVariable ["DAP_Wound_Free",1,true]; _unit setVariable ["DAP_WoundState",0,true];[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+? _unit GetVariable "BIS_BC_carried" : _unit setVariable ["DAP_Wound_Free",1,true]; _unit setVariable ["DAP_WoundState",0,true];[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+? _unit GetVariable "BIS_BC_dragged" and _nDrag==0 : _unit setVariable ["DAP_Wound_Free",2,true]; _unit setVariable ["DAP_WoundState",0,true];[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+? ((!(_unit GetVariable "BIS_BC_dragged")) and (_unit getVariable "DAP_Wound_Free"==2)): goto "RestoreState"
+
+? ((!(_unit GetVariable "BIS_BC_dragged")) and (!(_unit GetVariable "BIS_BC_carried")) and (_unit getVariable "DAP_Wound_Free"==1)): goto "RestoreState"
+
+? ((_ismedic==0) and (_unit getVariable "DAP_HEAL_STATE"==1)): exit
+
+?(_woundtimer==(_screamtimer+10)): [nil,_unit,rSAY,(DAP_WOUNDED_SCREAMSOUND select (round(random 9)))] call RE;_screamtimer=_woundtimer
+
+?_woundtimer>=(_rtimer+15) and ((_unit getVariable "DAP_WoundState")==1): _rtimer=_woundtimer; goto "HelpInit"
+? (_dmg ==0)and(canStand _unit): goto "Heal"
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~1
+
+goto "CheckState"
+
+#Heal
+
+#CheckDragStateB
+~1
+_dragstate =str(_unit GetVariable "BIS_BC_dragged");
+_carriedstate = str(_unit GetVariable "BIS_BC_carried");
+? _dragstate == "true": goto "CheckDragStateB"
+? _carriedstate=="true": goto "CheckDragStateB"
+
+[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+? !(alive _unit): goto "Dead"
+#Healed
+_unitwepons = weapons _unit
+_unitmagazines = magazines _unit
+_unitwepons = _unitwepons - (items _unit)
+
+{if ((_x == "Binocular")or(_x=="NVGoggles")or(_x=="Binocular_Vector")) then {_unitwepons=_unitwepons-[_x];};}ForEach _unitwepons
+
+?(((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500)):_cuwhpos = _unit modelToWorld [-1,-0.5,0];_cholder = "WeaponHolder" createVehicle _cuwhpos;_cholder setPos [_cuwhpos select 0, _cuwhpos select 1, (getPosATL _unit select 2)];_cholder setDir ((getDir _unit)+((random 45)+15));{_cholder addWeaponCargoGlobal [_x,1]; _unit removeWeapon _x;}ForEach _unitwepons; {_cholder AddMagazineCargoGlobal [_x,1]; _unit removeMagazine _x;}ForEach _unitmagazines; removeallWeapons _unit
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+
+~1 
+
+?!(alive _unit): goto "Dead"
+
+_unit setVariable ["DAP_Wound_Free",1,true]
+? isPlayer _unit  : _unit setVariable ["DAP_Wound", 0,true]
+
+? isNil("_dragger"): goto "CheckWeaponState"
+
+AISFinishHeal [_unit,_dragger,true,true]
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+
+_dragger setVariable ["DAP_WOUNDED_STATE",0,true]
+_dragger setVariable ["BIS_BC_injured",nil,true]
+
+_dragger setVariable ["BIS_BC_dragger",false,true]
+_dragger setVariable ["BIS_BC_dragged",false,true]
+
+[nil,_dragger,rPLAYMOVENOW,"AmovPknlMstpSrasWrflDnon"] call RE
+_dragger  setVariable ["BIS_noCoreConversations",false,true]
+
+[nil, _dragger, rSPAWN, [_dragger],{_man = _this select 0;_man setUnitPos "AUTO";_man enableAI "ANIM";_man enableAI "MOVE";_man enableAI "TARGET";_man enableAI "AUTOTARGET";_man disableConversation false;}] call RE
+
+?((!(isMultiplayer))and((_dragger getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _dragger
+
+? (((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500)): goto "HeEnemy"
+
+goto "CheckWeaponState"
+
+#Dead
+
+[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+
+?(alive _unit): _unit setDammage 1
+
+[nil,_unit,rSETCAPTIVE,false] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+_unit setVariable ["DAP_DRAGGED_STATE",false,true]
+
+_unit setVariable ["BIS_BC_dragged",false,true]
+_unit setVariable ["BIS_BC_dragger",false,true]
+_unit setVariable ["BIS_BC_carried",false,true]
+
+_unit setVariable ["DAP_WOUNDED_STATE",0,true]
+_unit setVariable ["BIS_BC_injured",nil,true]
+
+? isNil ("_dragger") : goto "NoDraggerDeath"
+
+AISFinishHeal [_unit,_dragger,true,true]
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+
+_dragger setVariable ["DAP_WOUNDED_STATE",0,true]
+_dragger setVariable ["BIS_BC_injured",nil,true]
+
+_dragger setVariable ["BIS_BC_dragger",false,true]
+_dragger setVariable ["BIS_BC_dragged",false,true]
+
+[nil,_dragger,rPLAYMOVENOW,"AmovPknlMstpSrasWrflDnon"] call RE
+_dragger  setVariable ["BIS_noCoreConversations",false,true]
+
+[nil, _dragger, rSPAWN, [_dragger],{_man = _this select 0;_man setUnitPos "AUTO";_man enableAI "ANIM";_man enableAI "MOVE";_man enableAI "TARGET";_man enableAI "AUTOTARGET";_man disableConversation false;}] call RE
+
+?((!(isMultiplayer))and((_dragger getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _dragger
+
+#NoDraggerDeath
+
+? (isPlayer _unit) : _unti setVariable ["DAP_Wound", 0,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+exit
+
+#RestoreState
+~3
+? ((_ismedic==0) and (_unit getVariable "DAP_HEAL_STATE"==1)):exit
+
+_nDrag=1
+? _unit GetVariable "BIS_BC_dragged": _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+? _unit GetVariable "BIS_BC_carried": _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+? AnimationState _unit == "AinjPfalMstpSnonWnonDnon_carried_Up": _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+? AnimationState _unit == "AinjPfalMstpSnonWrflDnon_carried_Up": _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+
+_unit setVariable ["BIS_BC_dragged",true,true]
+_unit setVariable ["BIS_BC_dragger",true,true]
+_unit setVariable ["BIS_BC_carried",true,true]
+
+[nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWrflDnon"] call RE
+
+? (damage _unit >0): [nil,_unit,rPLAYACTIONNOW,(DAP_WOUNDED_MOVES select (round(random 4)))] call RE
+
+~1
+_unit setVariable ["DAP_Wound_Free",0,true]
+_unit setVariable ["DAP_WoundState",1,true]
+
+_unit setVariable ["DAP_DRAGGED_STATE",false,true]
+
+_unit setVariable ["BIS_BC_dragged",false,true]
+_unit setVariable ["BIS_BC_dragger",false,true]
+_unit setVariable ["BIS_BC_carried",false,true]
+goto "CheckState"
+
+#DragHim
+?!(alive _dragger) or ((damage _dragger) >0.5) or (!(canStand _dragger)) or ((currentCommand _dragger) == "HEAL") : _unit setVariable ["DAP_Wound_Free",0,true]; _unit setVariable ["DAP_DRAGGED_STATE",false,true]; _unit setVariable ["BIS_BC_dragged",false,true]; _unit setVariable ["BIS_BC_dragger",false,true]; _unit setVariable ["DAP_DRAGGED_STATE",false,true]; _unit setVariable ["BIS_BC_dragged",false,true]; _unit setVariable ["BIS_BC_carried",false,true] ; _unit setVariable ["DAP_HEAL_STATE",0,true];goto "CheckState"
+
+?(isPlayer _unit): [nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setVariable ["BIS_BC_dragged",false]; _man setVariable ["BIS_BC_dragger",false];}] call RE
+
+_dragger setVariable ["BIS_BC_dragger", true,true]
+_dragger setVariable ["BIS_BC_dragged", true,true]
+_dragger setVariable ["DAP_Drag",1,true]
+
+?((!(isMultiplayer))and(_dragger in switchableUnits)): _dragger setVariable ["DAP_AIFAS_SWITCHABLEUNIT",1,true]; removeSwitchableUnit _dragger 
+
+? behaviour _dragger == "COMBAT" or behaviour _dragger == "STEALTH": [nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setUnitPos "MIDDLE";}] call RE
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man disableAI "TARGET"; _man disableAI "AUTOTARGET";}] call RE
+
+_pos_th =  _unit modelToWorld [0,0,0]
+
+dostop _dragger
+_dragger doMove  [(_pos_th  select 0)-0.5*sin (getDir _unit), (_pos_th  select 1)-0.5*cos (getDir _unit), _pos_th  select 2]
+
+#WaitDragger
+
+? _unit GetVariable "BIS_BC_dragged": _dragger setVariable ["BIS_BC_dragger", false,true]; _dragger setVariable ["BIS_BC_dragged", false,true]; _dragger setVariable ["DAP_Drag",0,true]; doStop _dragger; [_dragger] JoinSilent (group _dragger); _dragger = nil; _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+? _unit GetVariable "BIS_BC_carried": _dragger setVariable ["BIS_BC_dragger", false,true]; _dragger setVariable ["BIS_BC_dragged", false,true]; _dragger setVariable ["DAP_Drag",0,true]; doStop _dragger; [_dragger] JoinSilent (group _dragger); _dragger = nil; _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+
+?!(alive _unit): goto "Dead"
+?!(alive _dragger) or ((damage _dragger) >0.5) or (!(canStand _dragger)) or ((currentCommand _dragger) == "HEAL") : _unit setVariable ["DAP_Wound_Free",0,true]; _unit setVariable ["DAP_DRAGGED_STATE",false,true]; _unit setVariable ["BIS_BC_dragged",false,true]; _unit setVariable ["BIS_BC_dragger",false,true]; _unit setVariable ["DAP_DRAGGED_STATE",false,true]; _unit setVariable ["BIS_BC_dragged",false,true]; _unit setVariable ["BIS_BC_carried",false,true] ; _unit setVariable ["DAP_HEAL_STATE",0,true];goto "CheckState"
+_woundtimer=_woundtimer+1
+_dmg = getdammage _unit
+?_woundtimer>180: goto "Dead"
+? (alive _dragger) and ((getDammage _dragger) <0.5) and (canStand _dragger): _dragger doMove  [(getPos _unit select 0)-0.5*sin (getDir _unit), (getPos _unit select 1)-0.5*cos (getDir _unit), getPos _unit select 2] 
+_pos_th =  _unit modelToWorld [0,0,0]
+
+? _dragger distance _unit <= 5 and (_unit getVariable "DAP_WoundState"==1): dostop _dragger; [nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man disableAI "MOVE";}] call RE; _unit setVariable ["DAP_WoundState",0,true];_dragger setPos [(_pos_th select 0)-1.15*sin (getDir _unit), (_pos_th select 1)-1.15*cos (getDir _unit), _pos_th select 2]; goto "Helping"
+
+? (_dmg ==0) and (canStand _unit): goto "Heal"
+
+?(_woundtimer==(_screamtimer+10)): [nil,_unit,rSAY,(DAP_WOUNDED_SCREAMSOUND select (round(random 9)))] call RE;_screamtimer=_woundtimer
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~1
+goto "WaitDragger"
+#Helping
+
+? _unit GetVariable "BIS_BC_dragged": _dragger setVariable ["BIS_BC_dragger", false,true]; _dragger setVariable ["BIS_BC_dragged", false,true]; _dragger setVariable ["DAP_Drag",0,true]; doStop _dragger; [_dragger] JoinSilent (group _dragger); _dragger = nil; _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+? _unit GetVariable "BIS_BC_carried": _dragger setVariable ["BIS_BC_dragger", false,true]; _dragger setVariable ["BIS_BC_dragged", false,true]; _dragger setVariable ["DAP_Drag",0,true]; doStop _dragger; [_dragger] JoinSilent (group _dragger); _dragger = nil; _unit setVariable ["DAP_WoundState",0,true]; goto "CheckState"
+
+_dragger setVariable ["BIS_BC_injured",_unit,true]
+
+_unit setVariable ["DAP_DRAGGED_STATE",true,true]
+
+_unit setVariable ["BIS_BC_dragged", true, true]
+_unit setVariable ["BIS_BC_dragger", true, true]
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setUnitPos "MIDDLE";}] call RE
+
+[nil, _dragger, rSPAWN, [_dragger,(getDir _unit)],{_man = _this select 0; _injuredddir = _this select 1; _man setDir _injuredddir;}] call RE
+
+[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+[nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWrflDnon"] call RE
+
+_pos_th =  _unit modelToWorld [0,0,0]
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~0.05
+?!(alive _dragger) or ((getDammage _dragger) >0.5) or (!(canStand _dragger)): _unit setVariable ["DAP_Wound_Free",0,true]; _unit setVariable ["DAP_WoundState",1,true]; goto "RestoreState"
+? getPos _unit select 2 > 0.25 : goto "AIFABegin"
+? _unit getVariable "DAP_DRAG_STATE"==1: goto "AIFABegin"
+? ((((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500)) and (behaviour _dragger != "COMBAT")): goto "AIFABegin"
+? behaviour _dragger == "SAFE" or behaviour _dragger == "CARELESS": goto "AIFABegin"
+
+? count nearestObjects [[(_pos_th select 0)-15*sin (getDir _unit), (_pos_th select 1)-15*cos (getDir _unit), _pos_th select 2], ["LandVehicle","Air","Ship","Static"], 25]>0: goto "AIFABegin"
+
+[nil,_dragger,rPLAYMOVENOW,"AmovPercMstpSlowWrflDnon_AcinPknlMwlkSlowWrflDb_2"] call RE
+
+#WaitGrab
+~0.025
+?!(alive _dragger) or ((getDammage _dragger) >0.5) or (!(canStand _dragger)): _unit setVariable ["DAP_Wound_Free",0,true]; _unit setVariable ["DAP_WoundState",1,true]; _unit setVariable ["BIS_BC_dragged", false,true];goto "RestoreState"
+? (animationState _dragger) != "AmovPercMstpSlowWrflDnon_AcinPknlMwlkSlowWrflDb_2": goto "WaitGrab"
+
+[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+[nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDb_grab"] call RE
+
+[_unit, _dragger, [0.175,0.97,0],180] execVM "DAPMAN\Scripts\Wounded\Attach.sqf"
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~0.05
+?!(alive _dragger) or ((getDammage _dragger) >0.5) or (!(canStand _dragger)): detach _unit;  _unit setVariable ["DAP_WoundState",1,true]; [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDb_death"] call RE; _unit setVariable ["DAP_Wound_Free",0,true]; goto "RestoreState"
+_dscreamtimer=0
+
+_currentdraggerdamage = damage _dragger
+
+#Dragoff
+_dragger setVariable ["DAP_WOUNDED_STATE",1,true]
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man disableAI "ANIM";}] call RE
+
+_dragtime=_dragtime+1
+[nil,_dragger,rPLAYMOVENOW,"AcinPknlMwlkSrasWrflDb"] call RE
+
+? (alive _dragger) and ((Damage _dragger) >_currentdraggerdamage): goto "MoviePart"
+? (!(alive _dragger)): goto "MoviePart"
+? (!(alive _unit)): goto "DragRelease"
+
+?(_dragTime==(_dscreamtimer+10)): [nil,_unit,rSAY,(DAP_WOUNDED_SCREAMSOUND select (round(random 9)))] call RE; _dscreamtimer=_dragTime
+
+?_dragTime >= _dragTimeLimit: goto "DragRelease"
+
+? ((damage _unit) ==0) and (canStand _unit): goto "DragRelease"
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~1
+goto "Dragoff"
+#DragRelease
+
+~0.05
+
+_dragger setVariable ["BIS_BC_dragged",true,true]
+_dragger setVariable ["BIS_BC_dragger",true,true]
+
+[nil,_dragger,rPLAYMOVENOW,"AcinPknlMstpSrasWrflDnon_AmovPknlMstpSrasWrflDnon"] call RE
+
+[nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDb_death"] call RE
+
+detach _unit
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+#AIFABegin
+
+? ((damage _unit) ==0) and (canStand _unit): goto "Healed"
+
+_unit setVariable ["DAP_DRAG_STATE",1,true]
+
+_pos_th =  _unit modelToWorld [0,0,0]
+_dragger doMove [(_pos_th select 0)-1.5*sin (getDir _unit), (_pos_th select 1)-1.5*cos (getDir _unit), _pos_th select 2]
+?!(alive _unit): goto "RestoreDraggerState"
+?!(alive _dragger): goto "DraggerDeath"
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~3
+? !(alive _dragger): goto "DraggerDeath"
+_Offset = [-0.75,0.15,0]
+_WorldPos = _unit modelToWorld _Offset
+_dragger doMove _WorldPos
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~1
+? !(alive _dragger): goto "DraggerDeath"
+_pos_th =  _unit modelToWorld [0,0,0]
+
+[_dragger, _unit, [-0.75,0.15,0],90] execVM "DAPMAN\Scripts\Wounded\Attach.sqf"
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~0.05
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+?!(alive _unit): detach _dragger; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; goto "Dead"
+
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~2
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+?!(alive _unit): detach _dragger; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; goto "Dead"
+
+[nil,_dragger,rSWITCHMOVE,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medic1"] call RE
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+_fatimer=0
+#AIFAA
+~1
+_fatimer=_fatimer+1
+?(!(alive _dragger)):_fatimer=100
+?_fatimer<4: goto "AIFAA" 
+
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+?!(alive _unit): detach _dragger; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; goto "Dead"
+
+[nil,_dragger,rSWITCHMOVE,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medic5"] call RE
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+_fatimer=0
+#AIFAB
+~1
+_fatimer=_fatimer+1
+?(!(alive _dragger)):_fatimer=100
+?_fatimer<5: goto "AIFAB" 
+
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+?!(alive _unit): detach _dragger; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; goto "Dead"
+
+[nil,_unit,rSAY,(DAP_WOUNDED_SCREAMSOUND select (round(random 9)))] call RE
+
+[nil,_dragger,rSWITCHMOVE,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medic3"] call RE
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+_fatimer=0
+#AIFAC
+~1
+_fatimer=_fatimer+1
+?(!(alive _dragger)):_fatimer=100
+?_fatimer<15: goto "AIFAC" 
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+?!(alive _unit): detach _dragger; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; goto "Dead"
+
+[nil,_dragger,rSWITCHMOVE,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medic4"] call RE
+
+_unitwepons = weapons _unit
+_unitmagazines = magazines _unit
+_unitwepons = _unitwepons - (items _unit)
+
+{if ((_x == "Binocular")or(_x=="NVGoggles")or(_x=="Binocular_Vector")) then {_unitwepons=_unitwepons-[_x];};}ForEach _unitwepons
+
+?(((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500)):_cuwhpos = _unit modelToWorld [-1,-0.5,0];_cholder = "WeaponHolder" createVehicle _cuwhpos;_cholder setPos [_cuwhpos select 0, _cuwhpos select 1, (getPosATL _unit select 2)];_cholder setDir ((getDir _unit)+((random 45)+15));{_cholder AddWeaponCargoGlobal [_x,1]; _unit removeWeapon _x;}ForEach _unitwepons; {_cholder AddMagazineCargoGlobal [_x,1]; _unit removeMagazine _x;}ForEach _unitmagazines; removeallWeapons _unit
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+_fatimer=0
+#AIFAD
+~1
+_fatimer=_fatimer+1
+?(!(alive _dragger)):_fatimer=100
+?_fatimer<8: goto "AIFAD" 
+
+AISFinishHeal [_unit,_dragger,true,true]
+
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+?!(alive _unit): detach _dragger; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; goto "Dead"
+
+[nil,_dragger,rSWITCHMOVE,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+
+~1
+
+?!(alive _dragger): detach _dragger; goto "DraggerDeath"
+
+? (alive _unit) : _unit setDammage 0.25
+? (alive _unit) : [nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+? (alive _unit) : [nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setHit ["hands",0];}] call RE
+
+_dragmedic = getNumber (configFile >> "CfgVehicles" >> typeOf _dragger >> "attendant")
+? !(isNil("_dragmedic")) and _dragmedic == 1 : _unit setDammage 0
+
+? isPlayer _unit  : _unit setVariable ["DAP_Wound", 0,true]
+
+detach _dragger
+
+[nil, _dragger, rSPAWN, [_dragger],{_man = _this select 0;_man setUnitPos "AUTO";_man enableAI "ANIM";_man enableAI "MOVE";_man enableAI "TARGET";_man enableAI "AUTOTARGET";_man disableConversation false;}] call RE
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+
+_dragger setVariable ["DAP_WOUNDED_STATE",0,true]
+_dragger setVariable ["BIS_BC_injured",nil,true]
+
+_dragger setVariable ["BIS_BC_dragger",false,true]
+_dragger setVariable ["BIS_BC_dragged",false,true]
+
+_dragger  setVariable ["BIS_noCoreConversations",false,true]
+
+?!(alive _unit): goto "Dead"
+
+?((!(isMultiplayer))and((_unit getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _unit 
+?((!(isMultiplayer))and((_dragger getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _dragger 
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnconscious false;}] call RE
+
+~3
+?!(alive _unit): goto "Dead"
+_unit setVariable ["DAP_Wound_Free",1,true]
+
+? (((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500)): goto "HeEnemy"
+
+#CheckWeaponState
+_haveprimary = primaryWeapon _unit
+? _haveprimary!="": goto "HaveRifle"
+? _haveprimary=="": goto "NoRifle"
+
+#HaveRifle
+?(!(isPlayer _unit)): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWrflDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~1
+?(!(isPlayer _unit)): [nil,_unit,rPLAYMOVENOW,"AmovPknlMstpSrasWrflDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+goto "EndofWeaponCheck"
+
+#NoRifle
+?(!(isPlayer _unit)): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~1
+?(!(isPlayer _unit)): [nil,_unit,rPLAYMOVENOW,"AmovPercMstpSnonWnonDnon"] call RE
+
+#EndofWeaponCheck
+
+?(isPlayer _unit): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon_rolltofront"] call RE
+
+[nil,_unit,rSETCAPTIVE,false] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnconscious false;}] call RE
+
+AISFinishHeal [_unit,_dragger,true,true]
+
+?((!(isMultiplayer))and((_dragger getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _dragger
+
+_unit setVariable ["DAP_DRAGGED_STATE",false,true]
+
+_unit setVariable ["BIS_BC_dragged",false,true]
+_unit setVariable ["BIS_BC_dragger",false,true]
+_unit setVariable ["BIS_BC_carried",false,true]
+_unit setVariable ["DAP_Drag",0,true]
+_unit setVariable ["DAP_PFA",2,true]
+_unit setVariable ["DAP_WoundState",0,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+_unit setVariable ["DAP_WOUNDED_STATE",0,true]
+
+_unit  setVariable ["BIS_noCoreConversations",false,true]
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0;_man setUnitPos "AUTO";_man enableAI "ANIM";_man enableAI "MOVE";_man enableAI "TARGET";_man enableAI "AUTOTARGET";_man disableConversation false;}] call RE
+
+? isNil ("_dragger") : exit
+
+AISFinishHeal [_unit,_dragger,true,true]
+
+_dragger setVariable ["DAP_Drag",0,true]
+[_dragger] allowGetin true
+?(!(isNull(AssignedVehicle _dragger))): AssignedVehicle _dragger forceSpeed -1
+
+
+exit
+
+#RestoreDraggerState
+
+~5
+
+_unit setVariable ["DAP_DRAGGED_STATE",false,true]
+
+_unit setVariable ["BIS_BC_dragged",false,true]
+_unit setVariable ["BIS_BC_dragger",false,true]
+_unit setVariable ["BIS_BC_carried",false,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+_unit setVariable ["DAP_PFA",2,true]
+_unit setVariable ["DAP_HEAL_STATE",0,true]
+_unit setVariable ["DAP_DRAG_STATE",0,true]
+
+? isNil ("_dragger") : exit
+
+AISFinishHeal [_unit,_dragger,true,true]
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+
+_dragger setVariable ["DAP_WOUNDED_STATE",0,true]
+_dragger setVariable ["BIS_BC_injured",nil,true]
+
+_dragger setVariable ["BIS_BC_dragger",false,true]
+_dragger setVariable ["BIS_BC_dragged",false,true]
+
+[nil,_dragger,rPLAYMOVENOW,"AmovPknlMstpSrasWrflDnon"] call RE
+_dragger  setVariable ["BIS_noCoreConversations",false,true]
+
+[nil, _dragger, rSPAWN, [_dragger],{_man = _this select 0;_man setUnitPos "AUTO";_man enableAI "ANIM";_man enableAI "MOVE";_man enableAI "TARGET";_man enableAI "AUTOTARGET";_man disableConversation false;}] call RE
+
+?((!(isMultiplayer))and((_dragger getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _dragger
+
+[_dragger] allowGetin true
+?(!(isNull(AssignedVehicle _dragger))): AssignedVehicle _dragger forceSpeed -1
+
+exit
+
+#DraggerDeath
+
+detach _dragger
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+_unit setVariable ["DAP_Wound_Free",0,true]
+_unit setVariable ["DAP_WoundState",1,true]
+~1
+_dir_th = getDir _unit
+_pos_th =  _unit modelToWorld [0,0,0]
+
+[nil,_unit,rPLAYACTIONNOW,(DAP_WOUNDED_MOVES select (round(random 4)))] call RE
+
+~1
+
+_unit setVariable ["BIS_BC_dragged", false,true]
+_unit setVariable ["BIS_BC_dragger", false,true]
+_unit setVariable ["DAP_PFA",0,true]
+
+_dragtime=0
+_dragTimeLimit=5
+
+_woundtimer=0
+_screamtimer=0
+_rtimer=0
+
+_unit setVariable ["DAP_DRAG_RANGE",5,true]
+_unit setVariable ["DAP_DRAG_STATE",0,true]
+_unit setVariable ["DAP_HEAL_STATE",0,true]
+
+goto "CheckState"
+
+#MoviePart
+
+detach _unit
+_dragger setDammage 1
+
+[nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDb_death"] call RE
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~1
+
+_dragger setVariable ["BIS_BC_dragger", false,true]
+_dragger setVariable ["BIS_BC_dragged", false,true]
+~1
+_unit setVariable ["DAP_Wound_Free",0,true]
+_unit setVariable ["DAP_WoundState",1,true]
+
+_dir_th = getDir _unit
+_pos_th =  _unit modelToWorld [0,0,0]
+
+[nil,_unit,rPLAYACTIONNOW,(DAP_WOUNDED_MOVES select (round(random 4)))] call RE
+
+~1
+_unit setVariable ["BIS_BC_dragged", false,true]
+_unit setVariable ["BIS_BC_dragger", false,true]
+_unit setVariable ["BIS_BC_carried", false,true]
+_unit setVariable ["DAP_PFA",0,true]
+
+_unit setVariable ["DAP_HEAL_STATE",0,true]
+
+goto "CheckState"
+
+#RestoreUnitInGroup
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnconscious false;}] call RE
+
+[_dragger] allowGetin true
+?(!(isNull(AssignedVehicle _dragger))): AssignedVehicle _dragger forceSpeed -1
+
+exit
+
+#HeEnemy
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setunitPos "UP";}] call RE
+
+?(isPlayer _unit): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon"] call RE; [nil,_unit,rPLAYMOVE,"AinjPpneMstpSnonWnonDnon_rolltofront"] call RE
+
+?(!(isPlayer _unit)): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~3
+?(!(isPlayer _unit)): [nil,_unit,rPLAYMOVE,"AmovPercMstpSnonWnonDnon"] call RE
+
+_unit setVariable ["BIS_noCoreConversations",false,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man disableConversation false;}] call RE
+
+_unit setVariable ["BIS_BC_dragger", false,true]
+_unit setVariable ["BIS_BC_dragged", false,true]
+_unit setVariable ["DAP_Drag",0,true]
+_unit setVariable ["DAP_PFA",2,true]
+_dragger setVariable ["DAP_Drag",0,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~5
+
+[nil,_unit,rPLAYMOVENOW,"AmovPercMstpSnonWnonDnon_AmovPercMstpSsurWnonDnon"] call RE
+
+[_unit, _draggerside] execVM "DAPMAN\Scripts\Wounded\Escape.sqf"
+
+_unit setVariable ["DAP_WOUNDED_STATE",0,true]
+
+exit

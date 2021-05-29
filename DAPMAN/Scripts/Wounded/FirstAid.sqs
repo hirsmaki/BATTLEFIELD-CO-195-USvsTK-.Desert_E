@@ -1,0 +1,227 @@
+_unit = _this select 0
+_dragger = _this select 1
+
+_side  = (side (group _unit))
+_draggerside  = (side (group _dragger))
+
+? vehicle _dragger != _dragger: exit
+? !(alive _dragger): exit
+
+? (!(isPlayer _dragger)) : exit
+
+? _unit getVariable "DAP_WoundState"==0: _unit setVariable ["DAP_FAAction",0,true]; exit
+
+? _unit getVariable "DAP_HEAL_STATE"==1: exit
+_unit setVariable ["DAP_HEAL_STATE",1,true]
+
+_dragger setVariable ["DAP_WOUNDED_STATE",1,true]
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+
+_unit setVariable ["DAP_PFA",1,true]
+_unit setVariable ["DAP_WoundState",0,true]
+_unit setVariable ["DAP_Wound_Free",1,true]
+
+_pos_ph =_unit modelToWorld [0,0,0]
+
+[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+[nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWrflDnon"] call RE
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~1
+
+? !(alive _dragger): goto "HealInterrupted"
+
+_ismedic = getNumber (configFile >> "CfgVehicles" >> typeOf _dragger >> "attendant")
+? isNil("_ismedic"): _ismedic=0
+? _ismedic == 1 : goto "StartFAMedic"
+
+[_dragger, _unit, [-0.75,0.15,0],90] execVM "DAPMAN\Scripts\Wounded\Attach.sqf"
+
+~0.05
+? !(alive _dragger): goto "HealInterrupted"
+?!(alive _unit): detach _dragger; _dragger setVariable ["DAP_WOUNDED_STATE",0,true]; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; exit
+
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medic"] call RE
+
+#StartFAMedic
+
+_df = 0
+DAP_FirstAid_KeyCheck = compile preprocessFile "DAPMAN\Scripts\Wounded\BlockKP.sqf"
+_BKP = (findDisplay 46) displayAddEventHandler ["keyDown","_this call DAP_FirstAid_KeyCheck"]
+
+_xdf=0
+
+#FirstAid
+_df = _df + 1
+?!(alive _dragger):(findDisplay 46) displayRemoveEventHandler ["keyDown",_BKP]; goto "HealInterrupted"
+?!(alive _unit): detach _dragger; _dragger setVariable ["DAP_WOUNDED_STATE",0,true]; (findDisplay 46) displayRemoveEventHandler ["keyDown",_BKP]; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; exit
+
+? _ismedic == 1 : _df = 40; _ismedic=2
+? _df >= 45: goto "EndFA"
+
+? (isPlayer _unit) : _unit setVariable ["DAP_Wound", 1,true]
+? (isPlayer _unit) and (_unit getVariable "DAP_Wound"==1) : [_unit] execVM "DAPMAN\Scripts\Wounded\FX.sqf"
+
+~1
+
+_unitwepons = weapons _unit
+_unitmagazines = magazines _unit
+_unitwepons = _unitwepons - (items _unit)
+
+{if ((_x == "Binocular")or(_x=="NVGoggles")or(_x=="Binocular_Vector")) then {_unitwepons=_unitwepons-[_x];};}ForEach _unitwepons
+
+?((_xdf==0)  and (((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500))):_cuwhpos = _unit modelToWorld [-1,-0.5,0];_cholder = "WeaponHolder" createVehicle _cuwhpos;_cholder setPos [_cuwhpos select 0, _cuwhpos select 1, (getPosATL _unit select 2)];_cholder setDir ((getDir _unit)+((random 45)+15)); {_cholder AddWeaponCargoGlobal [_x,1]; _unit removeWeapon _x;}ForEach _unitwepons; {_cholder AddMagazineCargoGlobal [_x,1]; _unit removeMagazine _x;}ForEach _unitmagazines; removeallWeapons _unit
+
+_xdf = 1
+goto "FirstAid"
+
+#EndFA
+
+(findDisplay 46) displayRemoveEventHandler ["keyDown",_BKP]
+?!(alive _dragger): goto "HealInterrupted"
+?((!(alive _unit))and(_ismedic == 0)): detach _dragger; _dragger setVariable ["DAP_WOUNDED_STATE",0,true]; [nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE; exit
+?((!(alive _unit))and(_ismedic == 2)): detach _dragger; _dragger setVariable ["DAP_WOUNDED_STATE",0,true]; exit
+
+? _ismedic == 2: goto "EndFAMedic"
+
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE
+
+#EndFAMedic
+
+[nil,_unit, rPLAYACTIONNOW,"GestureNod"] call RE
+
+[nil, _dragger,"loc" ,rSPAWN, [_dragger],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+
+? (alive _unit) : _unit setDammage 0.25
+? (alive _unit) : [nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setHit ["legs",0];}] call RE
+? (alive _unit) : [nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setHit ["hands",0];}] call RE
+
+? (isPlayer _unit):_unit setVariable ["DAP_Wound", 0,true]
+? _ismedic == 2: _unit setDammage 0
+
+detach _dragger 
+_dragger setVariable ["DAP_WOUNDED_STATE",0,true]
+
+~3
+
+_dragger disableConversation false
+
+_dragger setVariable ["BIS_BC_dragger",false,true]
+_dragger setVariable ["BIS_BC_dragged",false,true]
+
+~3
+_unit setVariable ["DAP_Wound_Free",1,true]
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnconscious false;}] call RE
+
+?(((_side) getFriend (side _dragger) < 0.6) or ((rating _unit) <-2500)): goto "HeEnemy"
+
+#CheckWeaponState
+_haveprimary = primaryWeapon _unit
+? _haveprimary!="": goto "HaveRifle"
+? _haveprimary=="": goto "NoRifle"
+
+#HaveRifle
+?(!(isPlayer _unit)): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWrflDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~1
+
+?(!(isPlayer _unit)): [nil,_unit,rPLAYMOVENOW,"AmovPknlMstpSrasWrflDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+goto "EndofWeaponCheck"
+
+#NoRifle
+?(!(isPlayer _unit)): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~1
+?(!(isPlayer _unit)): [nil,_unit,rPLAYMOVENOW,"AmovPercMstpSnonWnonDnon"] call RE
+
+#EndofWeaponCheck
+
+?(isPlayer _unit): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon_rolltofront"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+[nil,_unit,rSETCAPTIVE,false] call RE
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnconscious false;}] call RE
+
+_unit setVariable ["BIS_BC_dragger",false,true]
+_unit setVariable ["BIS_BC_dragged",false,true]
+_unit setVariable ["BIS_BC_carried",false,true]
+_unit setVariable ["DAP_Drag",0,true]
+
+_unit setVariable ["DAP_WOUNDED_STATE",0,true]
+
+_unit setVariable ["DAP_PFA",2]
+_unit setVariable ["DAP_WoundState",0,true]
+_dragger setVariable ["DAP_Drag",0,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+?((!(isMultiplayer))and((_unit getVariable "DAP_AIFAS_SWITCHABLEUNIT")==1)): addSwitchableUnit _unit 
+
+_unit  setVariable ["BIS_noCoreConversations",false,true]
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0;_man setUnitPos "AUTO";_man enableAI "ANIM";_man enableAI "MOVE";_man enableAI "TARGET";_man enableAI "AUTOTARGET";_man disableConversation false;}] call RE
+
+exit
+
+#HealInterrupted
+
+detach _dragger
+[nil,_dragger,rPLAYMOVENOW,"AinvPknlMstpSnonWrflDnon_medicEnd"] call RE
+_dragger setVariable ["DAP_WOUNDED_STATE",0,true]
+
+_unit setVariable ["DAP_WoundState",0,true]
+_unit setVariable ["DAP_Drag",0,true]
+_unit setVariable ["DAP_WOUNDED_STATE",0,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; [_man] exec "DAPMAN\Scripts\Wounded\Wounded.sqs";}] call RE
+
+exit
+
+#HeEnemy
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnitPos "UP";}] call RE
+
+[nil, _unit, rSPAWN, [_unit],{_man = _this select 0; _man removeAllEventHandlers "HandleHeal";}] call RE
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man setUnconscious false;}] call RE
+
+?(isPlayer _unit): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon"] call RE; [nil,_unit,rPLAYMOVE,"AinjPpneMstpSnonWnonDnon_rolltofront"] call RE
+
+?(!(isPlayer _unit)): [nil,_unit,rSWITCHMOVE,"AinjPpneMstpSnonWnonDnon"] call RE
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001];}] call RE
+
+~3
+?(!(isPlayer _unit)): [nil,_unit,rPLAYMOVE,"AmovPercMstpSnonWnonDnon"] call RE
+
+_unit setVariable ["BIS_noCoreConversations",false,true];
+
+_unit setVariable ["BIS_BC_dragger",false,true]
+_unit setVariable ["BIS_BC_dragged",false,true]
+_unit setVariable ["BIS_BC_carried",false,true]
+_unit setVariable ["DAP_Drag",0,true]
+_unit setVariable ["DAP_PFA",2]
+_dragger setVariable ["DAP_Drag",0,true]
+
+[nil, _unit,"loc" ,rSPAWN, [_unit],{_man = _this select 0; _man  setVelocity [0,0,0.0001]; _man disableConversation false;}] call RE
+
+~5
+
+[nil,_unit,rPLAYMOVENOW,"AmovPercMstpSnonWnonDnon_AmovPercMstpSsurWnonDnon"] call RE
+
+[_unit, _draggerside] execVM "DAPMAN\Scripts\Wounded\Escape.sqf"
+
+_unit setVariable ["DAP_WOUNDED_STATE",0,true]
+
+exit

@@ -1,0 +1,348 @@
+#define LOADSCREEN "Pictures\LoadingScreen.paa"
+
+#include "RscClass.hpp"
+#include "Dialog.hpp"
+
+class RscTitles
+{
+	#include "RscTitles.hpp"
+	#include "DAPMAN\RscTitles.hpp"
+};
+	
+class CfgSounds
+{
+	#include "DAPMAN\CfgSounds.hpp"
+};
+
+class Header
+{
+gameType = Team;       
+minplayers=1;
+maxplayers=48;       
+};
+
+loadScreen = LOADSCREEN;
+onLoadMission="$STR_MISSION_TITLE";
+onLoadMissionTime=0;
+
+respawn = "BASE";
+respawnDelay = 15;
+respawnDialog = 0;
+debriefing = 0;
+showGPS=1;
+showRadio=0;
+briefing=0;
+aiKills = 1;
+disabledAI=True;
+
+class Params 
+{ 
+	#include "Settings\ServerSettings.hpp"
+};
+
+class CfgMusic
+{
+	tracks[] = {DEFEAT_EAST, DEFEAT_WEST, VICTORY_EAST, VICTORY_WEST};
+
+	class DEFEAT_EAST
+	{
+		name = "DEFEAT_EAST";
+		sound[] = {\Music\DEFEAT_EAST.ogg, db + 0, 1.0};
+		titles[] = {0, ""};
+	};
+	class DEFEAT_WEST
+	{
+		name = "DEFEAT_WEST";
+		sound[] = {\Music\DEFEAT_WEST.ogg, db + 0, 1.0};
+		titles[] = {0, ""};
+	};
+	class VICTORY_EAST
+	{
+		name = "VICTORY_EAST";
+		sound[] = {\Music\VICTORY_EAST.ogg, db + 0, 1.0};
+		titles[] = {0, ""};
+	};
+	class VICTORY_WEST
+	{
+		name = "VICTORY_WEST";
+		sound[] = {\Music\VICTORY_WEST.ogg, db + 0, 1.0};
+		titles[] = {0, ""};
+	};
+};
+
+class CfgRadio
+{
+	sounds[] = {};
+	
+	class CONFIRM_ALT_EAST
+	{
+		name = "CONFIRM_ALT_EAST"; 
+		sound[] = {\Sounds\Radio\CONFIRM_ALT_EAST.ogg, db + 0, 1.0};
+		title = $STR_CONFIRM_ALT; 
+	};
+	class CONFIRM_ALT_WEST
+	{
+		name = "CONFIRM_ALT_WEST"; 
+		sound[] = {\Sounds\Radio\CONFIRM_ALT_WEST.ogg, db + 0, 1.0};
+		title = $STR_CONFIRM_ALT; 
+	};
+	class CONFIRM_EAST
+	{
+		name = "CONFIRM_EAST"; 
+		sound[] = {\Sounds\Radio\CONFIRM_EAST.ogg, db + 0, 1.0};
+		title = $STR_CONFIRM;
+	};
+	class CONFIRM_WEST
+	{
+		name = "CONFIRM_WEST"; 
+		sound[] = {\Sounds\Radio\CONFIRM_WEST.ogg, db + 0, 1.0};
+		title = $STR_CONFIRM;
+	};
+	class DENIED_EAST
+	{
+		name = "DENIED_EAST";
+		sound[] = {\Sounds\Radio\DENIED_EAST.ogg, db + 0, 1.0};
+		title = $STR_DENIED;
+	};
+	class DENIED_WEST
+	{
+		name = "DENIED_WEST"; 
+		sound[] = {\Sounds\Radio\DENIED_WEST.ogg, db + 0, 1.0};
+		title = $STR_DENIED; 
+	};
+	class FIRE_EAST
+	{
+		name = "FIRE_EAST"; 
+		sound[] = {\Sounds\Radio\FIRE_EAST.ogg, db + 0, 1.0};
+		title = $STR_FIRE; 
+	};
+	class FIRE_WEST
+	{
+		name = "FIRE_WEST"; 
+		sound[] = {\Sounds\Radio\FIRE_WEST.ogg, db + 0, 1.0};
+		title = $STR_FIRE; 
+	};
+	class READY_EAST
+	{
+		name = "READY_EAST";
+		sound[] = {\Sounds\Radio\READY_EAST.ogg, db + 0, 1.0};
+		title = $STR_READY; 
+	};
+	class READY_WEST
+	{
+		name = "READY_WEST"; 
+		sound[] = {\Sounds\Radio\READY_WEST.ogg, db + 0, 1.0};
+		title = $STR_READY; 
+	};
+	class REQUEST_EAST
+	{
+		name = "REQUEST_EAST"; 
+		sound[] = {\Sounds\Radio\REQUEST_EAST.ogg, db + 0, 1.0};
+		title = $STR_REQUEST; 
+	};
+	class REQUEST_WEST
+	{
+		name = "REQUEST_WEST";
+		sound[] = {\Sounds\Radio\REQUEST_WEST.ogg, db + 0, 1.0};
+		title = $STR_REQUEST; 
+	};
+	class STANDBY_EAST
+	{
+		name = "STANDBY_EAST"; 
+		sound[] = {\Sounds\Radio\STANDBY_EAST.ogg, db + 0, 1.0};
+		title = $STR_STANDBY; 
+	};
+	class STANDBY_WEST
+	{
+		name = "STANDBY_WEST";
+		sound[] = {\Sounds\Radio\STANDBY_WEST.ogg, db + 0, 1.0};
+		title = $STR_STANDBY; 
+	};
+	class SUPREADY_EAST
+	{
+		name = "SUPREADY_EAST"; 
+		sound[] = {\Sounds\Radio\SUPREADY_EAST.ogg, db + 0, 1.0};
+		title = $STR_SUPREADY; 
+	};
+	class SUPREADY_WEST
+	{
+		name = "SUPREADY_WEST";
+		sound[] = {\Sounds\Radio\SUPREADY_WEST.ogg, db + 0, 1.0};
+		title = $STR_SUPREADY; 
+	};
+	class SUPDROP_EAST
+	{
+		name = "SUPDROP_EAST"; 
+		sound[] = {\Sounds\Radio\SUPDROP_EAST.ogg, db + 0, 1.0};
+		title = $STR_SUPDROP; 
+	};
+	class SUPDROP_WEST
+	{
+		name = "SUPDROP_WEST"; 
+		sound[] = {\Sounds\Radio\SUPDROP_WEST.ogg, db + 0, 1.0};
+		title = $STR_SUPDROP; 
+	};
+	class SUPDENIED_EAST
+	{
+		name = "SUPDENIED_EAST"; 
+		sound[] = {\Sounds\Radio\SUPDENIED_EAST.ogg, db + 0, 1.0};
+		title = $STR_SUPDENIED; 
+	};
+	class SUPDENIED_WEST
+	{
+		name = "SUPDENIED_WEST";
+		sound[] = {\Sounds\Radio\SUPDENIED_WEST.ogg, db + 0, 1.0};
+		title = $STR_SUPDENIED; 
+	};
+	class UAVDENIED_ALT_WEST
+	{
+		name = "UAVDENIED_ALT_WEST"; 
+		sound[] = {\Sounds\Radio\UAVDENIED_ALT_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAVDENIED_ALT; 
+	};
+	class UAVREADY_EAST
+	{
+		name = "UAVREADY_EAST"; 
+		sound[] = {\Sounds\Radio\UAVREADY_EAST.ogg, db + 0, 1.0};
+		title = $STR_UAVREADY; 
+	};
+	class UAVREADY_WEST
+	{
+		name = "UAVREADY_WEST";
+		sound[] = {\Sounds\Radio\UAVREADY_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAVREADY; 
+	};
+	class UAVSTART_EAST
+	{
+		name = "UAVSTART_EAST"; 
+		sound[] = {\Sounds\Radio\UAVSTART_EAST.ogg, db + 0, 1.0};
+		title = $STR_UAVSTART; 
+	};
+	class UAVSTART_WEST
+	{
+		name = "UAVSTART_WEST";
+		sound[] = {\Sounds\Radio\UAVSTART_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAVSTART; 
+	};
+	class UAV_EAST
+	{
+		name = "UAV_EAST"; 
+		sound[] = {\Sounds\Radio\UAV_EAST.ogg, db + 0, 1.0};
+		title = $STR_UAV; 
+	};
+	class UAV_WEST
+	{
+		name = "UAV_WEST"; 
+		sound[] = {\Sounds\Radio\UAV_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAV; 
+	};
+	class UAVEND_EAST
+	{
+		name = "UAVEND_EAST"; 
+		sound[] = {\Sounds\Radio\UAVEND_EAST.ogg, db + 0, 1.0};
+		title = $STR_UAVEND; 
+	};
+	class UAVEND_WEST
+	{
+		name = "UAVEND_WEST";
+		sound[] = {\Sounds\Radio\UAVEND_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAVEND;
+	};
+	class UAVDENIED_EAST
+	{
+		name = "UAVDENIED_EAST"; 
+		sound[] = {\Sounds\Radio\UAVDENIED_EAST.ogg, db + 0, 1.0};
+		title = $STR_UAVDENIED; 
+	};
+	class UAVDENIED_WEST
+	{
+		name = "UAVDENIED_WEST";
+		sound[] = {\Sounds\Radio\UAVDENIED_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAVDENIED; 
+	};
+	class UAVREQUEST_EAST
+	{
+		name = "UAVREQUEST_EAST"; 
+		sound[] = {\Sounds\Radio\UAVREQUEST_EAST.ogg, db + 0, 1.0};
+		title = $STR_UAVREQUEST; 
+	};
+	class UAVREQUEST_WEST
+	{
+		name = "UAVREQUEST_WEST";
+		sound[] = {\Sounds\Radio\UAVREQUEST_WEST.ogg, db + 0, 1.0};
+		title = $STR_UAVREQUEST; 
+	};
+	class SUPREQUEST_EAST
+	{
+		name = "SUPREQUEST_EAST"; 
+		sound[] = {\Sounds\Radio\SUPREQUEST_EAST.ogg, db + 0, 1.0};
+		title = $STR_SUPREQUEST; 
+	};
+	class SUPREQUEST_WEST
+	{
+		name = "SUPREQUEST_WEST";
+		sound[] = {\Sounds\Radio\SUPREQUEST_WEST.ogg, db + 0, 1.0};
+		title = $STR_SUPREQUEST; 
+	};
+	class TRANSPORTREQUEST_EAST
+	{
+		name = "TRANSPORTREQUEST_EAST"; 
+		sound[] = {\Sounds\Radio\TRANSPORTREQUEST_EAST.ogg, db + 0, 1.0};
+		title = $STR_TRANSPORTREQUEST; 
+	};
+	class TRANSPORTREQUEST_WEST
+	{
+		name = "TRANSPORTREQUEST_WEST";
+		sound[] = {\Sounds\Radio\TRANSPORTREQUEST_WEST.ogg, db + 0, 1.0};
+		title = $STR_TRANSPORTREQUEST; 
+	};
+	class TRANSPORT_EAST
+	{
+		name = "TRANSPORT_EAST"; 
+		sound[] = {\Sounds\Radio\TRANSPORT_EAST.ogg, db + 0, 1.0};
+		title = $STR_TRANSPORT_START; 
+	};
+	class TRANSPORT_WEST
+	{
+		name = "TRANSPORT_WEST";
+		sound[] = {\Sounds\Radio\TRANSPORT_WEST.ogg, db + 0, 1.0};
+		title = $STR_TRANSPORT_START;
+	};
+	class TRANSPORTDENIED_EAST
+	{
+		name = "TRANSPORTDENIED_EAST"; 
+		sound[] = {\Sounds\Radio\TRANSPORTDENIED_EAST.ogg, db + 0, 1.0};
+		title = $STR_TRANSPORTDENIED; 
+	};
+	class TRANSPORTDENIED_WEST
+	{
+		name = "TRANSPORTDENIED_WEST";
+		sound[] = {\Sounds\Radio\TRANSPORTDENIED_WEST.ogg, db + 0, 1.0};
+		title = $STR_TRANSPORTDENIED; 
+	};
+	class LOSTCP_EAST
+	{
+		name = "LOSTCP_EAST"; 
+		sound[] = {\Sounds\Radio\LOSTCP_EAST.ogg, db + 0, 1.0};
+		title = $STR_LOSTCP; 
+	};
+	class LOSTCP_WEST
+	{
+		name = "LOSTCP_WEST";
+		sound[] = {\Sounds\Radio\LOSTCP_WEST.ogg, db + 0, 1.0};
+		title = $STR_LOSTCP; 
+	};
+	class CAPTURECP_EAST
+	{
+		name = "CAPTURECP_EAST"; 
+		sound[] = {\Sounds\Radio\CAPTURECP_EAST.ogg, db + 0, 1.0};
+		title = $STR_CAPTURECP; 
+	};
+	class CAPTURECP_WEST
+	{
+		name = "CAPTURECP_WEST";
+		sound[] = {\Sounds\Radio\CAPTURECP_WEST.ogg, db + 0, 1.0};
+		title = $STR_CAPTURECP; 
+	};
+};
+

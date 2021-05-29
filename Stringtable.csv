@@ -1,0 +1,158 @@
+﻿LANGUAGE, English, Russian
+
+STR_MISSION_TITLE, "OPERATION ''IRON HAND''", "ОПЕРАЦИЯ ''СТАЛЬНАЯ РУКА''"
+STR_BRIEFING_TITLE, "Operation ''Iron Hand''", "Операция ''Стальная рука''"
+
+STR_MISSION_NAME, "OPERATION: IRON HAND", "ОПЕРАЦИЯ: СТАЛЬНАЯ РУКА"
+STR_MISSION_LOCATION, "DESERT", "ПУСТЫНЯ"
+STR_MISSION_VICTORY, "VICTORY", "ПОБЕДА"
+STR_MISSION_DEFEAT, "DEFEAT", "ПОРАЖЕНИЕ"
+STR_MISSION_DRAW, "DRAW", "НИЧЬЯ"
+
+STR_BF_WEST_BASE, "US Army Base", "База Армии США"
+STR_BF_EAST_BASE, "Takistan Army Base", "База Армии Такистана"
+
+STR_BF_DESERT_BUILDING, "Building", "Стройка"
+STR_BF_DESERT_OILRIG, "Oil Rig", "Нефтяное месторождение"
+STR_BF_DESERT_VILLAGE, "Village", "Деревня"
+STR_BF_DESERT_PUMPSTATION, "Pump station", "Насосная станция"
+
+STR_CFG_PAPABEAR, "HQ", "ШТАБ"
+STR_CFG_FIREFLYBASE, "HQ", "ШТАБ"
+STR_BF_SUPPORTMENU, "Support", "Связь"
+
+STR_DAP_LIFTVEHICLE, "Lift vehicle", "Прицепить технику"
+STR_DAP_DROPVEHICLE, "Drop vehicle", "Сбросить технику"
+
+STR_ARMORY_SAVELOADOUT, "Save loadout", "Сохранить снаряжение"
+STR_ARMORY_LOADLOADOUT, "Load loadout", "Загрузить снаряжение"
+STR_ARMORY_NOSAVEDLOADOUT, "No saved loadout", "Нет сохраненного снаряжения"
+STR_ARMORY_LOADOUTWASSAVED, "Loadout was saved", "Cнаряжение сохранено"
+
+STR_TAKE_ALICE, "Take ALICE backpack", "Взять рюкзак ALICE"
+STR_TAKE_ASSAULT, "Take M70 backpack", "Взять рюкзак М70"
+STR_TAKE_RPG, "Take RPG backpack", "Взять рюкзак РПГ"
+
+STR_TAKE_PATROL, "Take PATROL backpack", "Взять рюкзак PATROL"
+STR_TAKE_CZBP, "Take SABRE backpack", "Взять рюкзак SABRE"
+
+STR_TAKE_ACU, "Take ACU", "Взять рюкзак ACU"
+STR_TAKE_COYOTE, "Take COYOTE", "Взять рюкзак COYOTE"
+STR_TAKE_UAV, "Take UAV terminal", "Взять терминал БПЛА"
+
+STR_REMOVE_BACKPACK, "Remove backpack", "Снять рюкзак"
+STR_NOSPACEBACKPACK, "Too heavy", "Слишком тяжело"
+
+STR_RECRUITING, "Recruiting", "Набрать взвод"
+STR_NOSQUADASSIGNED, "You can not lead the squad", "Вы не можете командовать взводом"
+STR_ALREADYHAVESQUAD, "You already have squad", "У вас уже есть взвод"
+
+STR_DAP_BF_SQUAD_STATUS, "Squad Status", "Статус взвода"
+STR_DAP_BF_SQUAD_MEMBERS,"Squad members: ", "Бойцы взвода: "
+STR_DAP_BF_SQUAD_LEADER,"Squad leader:", "Командир взвода:"
+STR_DAP_BF_SQUAD_SLOTSUSED,"Slots used: ", "Слотов заполнено: "
+
+STR_ACT_BANDAGE, "Bandage", "Перевязка"
+
+STR_PILOTGEARRESTRICTION, "The cockpit is no place for your equipment", "В кабине нет места для вашего снаряжения"
+STR_PILOTRESTRICTION, "Only the pilot can control this vehicle", "Только пилот может управлять этой техникой"
+
+DAP_CARGO_ACT_GETON, "Sit on armor", "На броню"
+DAP_CARGO_INF_NOPOS, "No free positions", "Нет свободных мест"
+
+STR_DAP_BF_OPTIONS_ACTION, "Options", "Опции"
+STR_DAP_BF_OPTIONS, "OPTIONS", "ОПЦИИ"
+STR_DAP_BF_OPTIONS_CLOSE, "ACCEPT", "ПРИНЯТЬ"
+STR_DAP_BF_OPTIONS_VDLABEL, "VIEW DISTANCE", "ДАЛЬНОСТЬ"
+STR_DAP_BF_OPTIONS_TQLABEL, "TERRAIN QUALITY", "ТРАВА"
+
+STR_DAP_BF_OPTIONS_TQ_VLOW, "VERY LOW", "ОЧ. НИЗКО"
+STR_DAP_BF_OPTIONS_TQ_LOW, "LOW", "НИЗКО"
+STR_DAP_BF_OPTIONS_TQ_MED, "MEDIUM", "НОРМАЛЬНО"
+STR_DAP_BF_OPTIONS_TQ_HIGH, "HIGH", "ХОРОШО"
+STR_DAP_BF_OPTIONS_TQ_VHIGH, "VERY HIGH", "ОЧ. ХОРОШО"
+
+STR_CONFIRM_ALT, "AFFIRMATIVE", "ПРИНЯЛ"
+STR_CONFIRM, "TEN-FOUR", "ПОДТВЕРЖДАЮ"
+
+STR_DENIED, "ARTILLERY STRIKE DENIED", "В ДАННЫЙ МОМЕНТ АРТПОДДЕРЖКА НЕВОЗМОЖНА"
+STR_FIRE, "ARTILLERY AT YOUR AREA", "НАЧИНАЕМ АРТОБСТРЕЛ"
+STR_FIREEND, "GOOD WORK", "ОТЛИЧНАЯ РАБОТА."
+STR_READY, "SQUADLEADERS. ARTILLERY IS AVALIBLE", "ОРУДИЯ К БОЮ ГОТОВЫ. ПЕРЕДАВАЙТЕ КООРДИНАТЫ"
+STR_REQUEST, "REQUEST ARTILLERY STKIKE AT THIS TARGET!", "ЗДЕСЬ НУЖЕН АРТОБСТРЕЛ!"
+STR_SENDTARGET, "SENDING COORDINATES", "ЦЕЛЬ ПОМЕЧЕНА, ПРИЕМ"
+STR_STANDBY, "AFFIRMATIVE. STAND BY FOR ARTILLERY MISSION. OVER.", "ВАС ПОНЯЛ. ВЫЗЫВАЮ АРТОБСТРЕЛ"
+
+STR_UAVREQUEST, "REQUESTING UAV OVERFLY. OVER", "ЗАПРАШИВАЮ ВОЗДУШНУЮ РАЗВЕДКУ. ПРИЕМ"
+STR_UAVREADY, "SQUADLEADERS. UAV SUPPORT IS AVALIBLE", "БЕСПИЛОТНИК ГОТОВ"
+STR_UAVSTART, "UAV HAS BEEN LAUNCHED", "ПОЛУЧАЕМ ДАННЫЕ ОТ БЕСПИЛОТНОЙ РАЗВЕДКИ"
+STR_UAV, "UAV ONLINE AND TRANSMITTING", "БЕСПИЛОТНАЯ РАЗВЕДКА НАЧИНАЕТ ПЕРЕДАЧУ ДАННЫХ"
+STR_UAVEND, "UAV OFFLINE", "СВЯЗЬ С САМОЛЕТОМ РАЗВЕДКИ УТЕРЯНА"
+STR_UAVDENIED, "UAV SUPPORT DENIED. OVER", "ВОЗДУШНАЯ РАЗВЕДКА НЕВОЗМОЖНА. ПРИЕМ"
+STR_UAVDENIED_ALT, "NEGATIVE. UAV ALREADY AIRBORNE", "ВОЗДУШНАЯ РАЗВЕДКА НЕВОЗМОЖНА. ПРИЕМ"
+
+STR_SUPREQUEST, "WE NEED SUPPLY DROP AT THIS COORDINATES. OVER", "ТУТ НЕОБХОДИМО ОБЕСПЕЧИТЬ СНАБЖЕНИЕМ. ПРИЕМ"
+STR_SUPREADY, "SQUADLEADERS. RESUPPLY AVALIBLE ON YOUR REQUEST", "СНАБЖЕНИЕ УЖЕ В ПУТИ"
+STR_SUPDROP, "SUPPLIES AT YOUR POSITION", "ПРИНИМАЙТЕ СНАБЖЕНИЕ"
+STR_SUPDENIED, "NEGATIVE ON THE SUPPLY DROP. OVER", "ЗАПРОС НА СНАБЖЕНИЕ ОТКЛОНЕН"
+STR_SUPHEAL, "Heal", "Перевязка"
+
+STR_TRANSPORTREQUEST, "REQUESTING A PICK UP. OVER", "МНЕ НУЖЕН ТРАНСПОРТ. ПРИЕМ"
+STR_TRANSPORTDENIED, "UNABLE TO COMPLY. OVER", "ТЕХНИКИ СЕЙЧАС НЕТ. ПРИЕМ"
+STR_TRANSPORT_START, "AFFIRMATIVE. A VEHICLE IS ON THE WAY", "ВАС ПОНЯЛ. ТЕХНИКА ПОШЛА."
+
+STR_COM_ART, "Artillerty", "Артиллерия"
+STR_COM_UAV, "UAV", "БПЛА"
+STR_COM_SUP, "Supplies", "Снабжение"
+STR_COM_TRN, "Transport", "Транспорт"
+STR_COM_EVAC, "Evacuation", "Эвакуация"
+
+STR_SL_ART, "Fire mission request", "Запрос артиллерии"
+STR_SL_UAV, "UAV request", "Запрос БПЛА"
+STR_SL_SUP, "Supplies request", "Запрос снабжения"
+STR_SL_TRN, "Transport request", "Запрос транспорта"
+STR_BF_EVAC, "Evac request", "Запрос эвакуации"
+
+STR_MARK_ART_RQ, " FIRE MISSION REQUEST", " ЗАПРОС АРТИЛЛЕРИИ"
+STR_MARK_UAV_RQ, " UAV REQUEST", " ЗАПРОС БПЛА"
+STR_MARK_SUP_RQ, " SUPPLIES REQUEST", " ЗАПРОС СНАБЖЕНИЯ"
+
+STR_MARK_ART, " FIRE MISSION", " АРТИЛЛЕРИЙСКИЙ УДАР"
+STR_MARK_UAV, " UAV MISSION", " БПЛА"
+STR_MARK_SUP, " SUPPLIES", " СНАБЖЕНИЕ"
+
+STR_LOSTCP, "OUTPOST IS BEING OVERRUN", "ПОЗИЦИЯ ЗАХВАЧЕНА ПРОТИВНИКОМ"
+STR_CAPTURECP, "POSITION CLEARED AND UNDER CONTROL", "ПОЗИЦИЯ ЗАХВАЧЕНА И ЗАЧИЩЕНА"
+
+STR_BF_MP_TIMELIMIT, "TIME LIMIT:", "ОГРАНИЧЕНИЕ ПО ВРЕМЕНИ:"
+STR_BF_MP_SCORELIMIT, "SCORES LIMIT:", "ОГРАНИЧЕНИЕ ПО ОЧКАМ:"
+STR_BF_MP_DRAWDISTANCE, "VIEW DISTANCE:", "ДАЛЬНОСТЬ ПРОРИСОВКИ:"
+STR_BF_MP_GROUNDQUALITY, "TERRAIN QUALITY:", "КАЧЕСТВО ПОВЕРХНОСТИ:"
+
+STR_BF_MP_ENABLEPLAYERMARKERS, "PLAYERS MARKERS:", "МАРКЕРЫ ИГРОКОВ:"
+STR_BF_MP_ENABLEPM_NO, "DISABLED", "ОТКЛЮЧЕНО"
+STR_BF_MP_ENABLEPM_PLAYER, "PLAYER", "ИГРОК"
+STR_BF_MP_ENABLEPM_SQUAD, "SQUAD", "ВЗВОД"
+STR_BF_MP_ENABLEPM_TEAM, "TEAM", "КОМАНДА"
+
+STR_BF_MP_ENABLEAI, "ENABLE AI:", "ПОДДЕРЖКА АИ:"
+STR_BF_MP_UNLIMITEDAMMO, "UNLIMITED AMMO AI:", "БЕСКОНЕЧНЫЕ БОЕПРИПАСЫ АИ:"
+STR_BF_MP_ENABLEDS, "ENABLE AI DEFENCE SQUAD:", "СОЗДАНИЕ ВЗВОДА ОБОРОНЫ АИ:"
+
+STR_BF_MP_RESPAWNTIME, "RESPAWN TIME:", "ВРЕМЯ ДО ВОЗРОЖДЕНИЯ:"
+STR_BF_MP_MISSIONTIME, "MISSION TIME:", "ВРЕМЯ НАЧАЛА МИССИИ:"
+
+STR_BF_MP_ENABLE_TRUE, "YES", "ДА"
+STR_BF_MP_ENABLE_FALSE, "NO", "НЕТ"
+
+STR_DAP_TIMER_CAPTION_NAME, "TIME ELAPSED:", "ВРЕМЕНИ ОСТАЛОСЬ:"
+
+STR_TIME_UNLIMITED, "UNLIMITED", "НЕОГРАНИЧЕННО"
+
+STR_CFG_GRPNAMES_ALPHA, "Granit", "Гранит"
+STR_CFG_GRPNAMES_BRAVO, "Hawk", "Орел"
+
+STR_TEXT_BRIEFINGTITLE, "Briefing", "Брифинг"
+STR_TEXT_BRIEFINGTEXT, "<br/>TASK:<br/><br/>Take and secure all key points in combat area." , "<br/>ЗАДАЧА:<br/><br/>Взять под контроль и удержать все ключевые точки в районе операции."
+STR_TEXT_INFORMATIONTITLE, "Information", "Информация"
+STR_TEXT_INFORMATIONTEXT,"<br/>GAMEPLAY:<br/><br/>This is standart Advance And Secure mission: You can raise your tickets by holding control points on the map. When tickets reach maximum value, or time is up, then team, which have more tickets win.<br/><br/>FEATURES:<br/><br/>- AI support:<br/><br/>    - AI defend bases and takes points.<br/>    - AI uses transport.<br/>    - AI crew:<br/><br/>    In gamemodes with AI after respawn some vehicles will be filled with AI crew. Before it happens you have 45 seconds to take place in vehicle. After those 45 seconds all empty positions in vehicle will be filled with AI. If you take place of commander, or driver (or even gunner in land vehicles), then you will get ability to control vehicle via commands or directly.  <br/><br/>    AI can be disabled via mission's settings before mission start.<br/> <br/>- HQ Assets:<br/>	<br/>    - Artillery mission<br/>    - UAV<br/>    - Supply drop<br/><br/>    - Transport: 	<br/>        <br/>    This feature allow request transport for moving to any position on the map. If you will close to the base, then transport will wait you at start position. If you will far from base, then transport will move to your current position, pick you up, and move to the selected position.<br/>	<br/>    - Evac:<br/>	  <br/>    This feature allow request transport for picking you up from any position on the map. <br/>    <br/>    All requests works via support menu (0-8)<br/><br/>OPTIONS:<br/><br/>You can set view distance and grass density via ''Options'' in actions menu.", "<br/>ОПИСАНИЕ:<br/><br/>Это стандартная миссия ''Захват и Удержание''. Очки даются только за удержание контрольных точек. <br/><br/>ОСОБЕННОСТИ:<br/><br/>- Полная поддержка АИ:<br/><br/>    - АИ захватывает точки и защищает их.<br/>    - АИ использует транспорт.<br/>    - АИ экипажи:<br/><br/>    В режиме игры с АИ через 45 секунд после респауна техники все свободные места (кроме грузового отсека) будут заполнены АИ. До этого момента игрок может занять любое место в технике.<br/><br/>- Поддержка:<br/><br/>    - Артиллерийский удар<br/>    - БПЛА<br/>    - Сброс снабжения<br/><br/>    - Транспорт:<br/><br/>    Эта функция позволяет запросить транспорт для перемещения в любую точку на карте. Если вы находитесь рядом с базой, то транспорт будет ждать вас на стоянке транспорта. Если вы будете далеко от базы, то транспорт подберет вас из вашего текущего местоположения, и доставит к выбранной позиции.<br/><br/>    Будьте внимательны: если расстояние от вашей текущей позиции до места назначения слишком мало, то вам будет отказано в транспортировке.<br/><br/>    - Эвакуация:<br/><br/>    Эта функция позволяет вам запросить транспорт для возвращения на базу.<br/><br/>    Будьте внимательны: если расстояние от вашей текущей позиции до базы слишком мало, то вам будет отказано в эвакуации.<br/><br/>    Все запросы делаются через меню поддержки (0-8)<br/><br/>ОПЦИИ:<br/><br/>Вы можете задать дальность видимости и качество поверхности через пункт ''Опции'' в меню действий."
