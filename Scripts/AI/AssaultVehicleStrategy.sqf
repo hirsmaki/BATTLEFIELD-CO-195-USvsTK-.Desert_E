@@ -265,7 +265,7 @@ While {alive _vehicle} do
 						
 				if (alive _vehicle) then {sleep 5;};
 					
-				if  (((count(units _group)==0) or (count(crew _vehicle)==0) or (!(canMove _vehicle))) or (!(canMove _vehicle)))then {{unassignVehicle _x; [_x] orderGetIn false;}ForEach crew _vehicle; {doStop _x}ForEach units _group;sleep 30; _vehicle setDammage 1;};
+				if  (((count(units _group)==0) or (count(crew _vehicle)==0) or (!(canMove _vehicle))) or (!(canMove _vehicle)))then {{unassignVehicle _x; [_x] orderGetIn false;}ForEach crew _vehicle; {doStop _x}ForEach units _group;sleep 30;};
 			
 				WaitUntil {sleep 1;((unitReady _vehicle) or (((count(units _group)==0) or (count(crew _vehicle)==0) or (!(canMove _vehicle))) or (!(canMove _vehicle))))};
 					
